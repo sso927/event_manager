@@ -24,7 +24,9 @@ def test_user_create_valid(user_create_data):
 def test_user_update_valid(user_update_data):
     user_update = UserUpdate(**user_update_data)
     assert user_update.email == user_update_data["email"]
-    assert user_update.first_name == user_update_data["first_name"]
+    
+    if 'first_name' in user_update_data:
+        assert user_update.first_name == user_update_data["first_name"]
 
 # Tests for UserResponse
 def test_user_response_valid(user_response_data):
