@@ -29,9 +29,10 @@ def test_user_update_valid(user_update_data):
         assert user_update.first_name == user_update_data["first_name"]
 
 # Tests for UserResponse
+from uuid import UUID
 def test_user_response_valid(user_response_data):
     user = UserResponse(**user_response_data)
-    assert user.id == user_response_data["id"]
+    assert user.id == UUID(user_response_data["id"])
     # assert user.last_login_at == user_response_data["last_login_at"]
 
 # Tests for LoginRequest

@@ -246,10 +246,11 @@ def user_update_data():
         "profile_picture_url": "https://example.com/profile_pictures/john_doe_updated.jpg"
     }
 
+import uuid
 @pytest.fixture
 def user_response_data():
     return {
-        "id": "unique-id-string",
+        "id": str(uuid.uuid4()),
         "username": "testuser",
         "email": "test@example.com",
         "last_login_at": datetime.now(),
@@ -260,4 +261,7 @@ def user_response_data():
 
 @pytest.fixture
 def login_request_data():
-    return {"username": "john_doe_123", "password": "SecurePassword123!"}
+    return {"email": 'john.doe@example.com',
+            "username": 'john_doe_123',
+            "password": 'SecurePasswrod123!'
+    }
