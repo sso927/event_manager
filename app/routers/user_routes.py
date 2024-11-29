@@ -141,13 +141,16 @@ async def create_user(user: UserCreate, request: Request, db: AsyncSession = Dep
     """
     existing_user = await UserService.get_by_email(db, user.email)
     if existing_user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists. Choose another email to ensure privacy.")
+    
+    existing_nickname = await UserService.get_by_nickname(db, user.nickname)
+    if existing_nickname:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nickname is taken. Choose another nickname to ensure privacy.")
     
     created_user = await UserService.create(db, user.model_dump(), email_service)
     if not created_user:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create user")
-    
-    
+
     return UserResponse.model_construct(
         id=created_user.id,
         bio=created_user.bio,
@@ -155,7 +158,7 @@ async def create_user(user: UserCreate, request: Request, db: AsyncSession = Dep
         last_name=created_user.last_name,
         profile_picture_url=created_user.profile_picture_url,
         github_profile_url=user.github_profile_url,
-        linkedin_profile_url=user.linkedin_profile_url,
+        linkedin_profile_url=user.linkedin_profile_url, 
         nickname=created_user.nickname,
         email=created_user.email,
         last_login_at=created_user.last_login_at,
