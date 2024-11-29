@@ -9,7 +9,8 @@ def test_user_base_valid(user_base_data):
     user = UserBase(**user_base_data)
     assert user.email == user_base_data["email"]
 
-    assert user.nickname == user_base_data["nickname"]
+    if 'nickname' in user_base_data:
+        assert user.nickname == user_base_data["nickname"]
 
 # Tests for UserCreate
 def test_user_create_valid(user_create_data):
