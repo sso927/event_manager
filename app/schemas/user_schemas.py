@@ -32,6 +32,19 @@ class UserBase(BaseModel):
     profile_picture_url: Optional[str] = Field(None, example="https://example.com/profiles/john.jpg")
     linkedin_profile_url: Optional[str] =Field(None, example="https://linkedin.com/in/johndoe")
     github_profile_url: Optional[str] = Field(None, example="https://github.com/johndoe")
+  
+    #here
+    @validator('nickname')
+    def validate_nickname(cls, value):
+        if not value or len(value) < 3:
+            raise ValueError('Nickname must be at least 3 characters long. It is too short.')
+        
+        if not re.match(r'^[a-zA-Z0-9_]+$', value):
+            raise ValueError('Nickname should only contain alphabetical letters, numbers, and underscores.')
+        
+        return value
+        
+    #to here
 
     _validate_urls = validator('profile_picture_url', 'linkedin_profile_url', 'github_profile_url', pre=True, allow_reuse=True)(validate_url)
  
