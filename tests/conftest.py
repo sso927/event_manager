@@ -36,7 +36,7 @@ from app.utils.security import hash_password
 from app.utils.template_manager import TemplateManager
 from app.services.email_service import EmailService
 from app.services.jwt_service import create_access_token
-
+from sqlalchemy import text
 fake = Faker()
 
 settings = get_settings()
@@ -195,7 +195,7 @@ async def admin_user(db_session: AsyncSession):
     await db_session.commit()
     return user
 
-
+ 
 
 @pytest.fixture
 async def manager_user(db_session: AsyncSession):
@@ -267,3 +267,5 @@ def login_request_data():
             "username": 'john_doe_123',
             "password": 'SecurePasswrod123!'
     }
+
+
