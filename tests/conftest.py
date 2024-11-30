@@ -195,6 +195,8 @@ async def admin_user(db_session: AsyncSession):
     await db_session.commit()
     return user
 
+
+
 @pytest.fixture
 async def manager_user(db_session: AsyncSession):
     user = User(
