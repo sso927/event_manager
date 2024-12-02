@@ -166,11 +166,6 @@ async def create_user(user: UserCreate, request: Request, db: AsyncSession = Dep
     created_user = await UserService.create(db, user.model_dump(), email_service)
     if not created_user:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create user")
-<<<<<<< HEAD
-
-=======
- 
->>>>>>> e423d192f76d05816489e486046ff05208e8cbab
     return UserResponse.model_construct(
         id=created_user.id,
         bio=created_user.bio,
