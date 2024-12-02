@@ -33,6 +33,9 @@ from app.services.jwt_service import create_access_token
 from app.utils.link_generation import create_user_links, generate_pagination_links
 from app.dependencies import get_settings
 from app.services.email_service import EmailService
+
+from pydantic import EmailStr
+
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 settings = get_settings()
@@ -87,6 +90,17 @@ async def update_user(user_id: UUID, user_update: UserUpdate, request: Request, 
     - **user_update**: UserUpdate model with updated user information.
     """
     user_data = user_update.model_dump(exclude_unset=True)
+    
+    if 'email' in user_data:
+        existing_user = await UserService.get_by_email(db, user_data['email'])
+        if existing_user and existing_user.id != user_id:
+            raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail= 'Email is already taken by someone else. Choose another email.')
+        
+    if 'nickname' in user_data:
+        existing_nickname = await UserService.get_by_nickname(db, user_data['nickname'])
+        if existing_nickname and existing_nickname.id != user_id:
+            raise HTTPException(status_code = status.HTTP_400_BAD_REQUEST, detail = 'Nickname is already taken by someone else. Choose another nickname.')
+
     updated_user = await UserService.update(db, user_id, user_data)
     if not updated_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -139,21 +153,28 @@ async def create_user(user: UserCreate, request: Request, db: AsyncSession = Dep
     Returns:
     - UserResponse: The newly created user's information along with navigation links.
     """
+    
+    
     existing_user = await UserService.get_by_email(db, user.email)
     if existing_user:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already exists. Choose another email to ensure privacy.")
+    
+    existing_nickname = await UserService.get_by_nickname(db, user.nickname)
+    if existing_nickname:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Nickname is taken. Choose another nickname to ensure privacy.")
     
     created_user = await UserService.create(db, user.model_dump(), email_service)
     if not created_user:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create user")
-    
-    
+
     return UserResponse.model_construct(
         id=created_user.id,
         bio=created_user.bio,
         first_name=created_user.first_name,
         last_name=created_user.last_name,
         profile_picture_url=created_user.profile_picture_url,
+        github_profile_url=user.github_profile_url,
+        linkedin_profile_url=user.linkedin_profile_url, 
         nickname=created_user.nickname,
         email=created_user.email,
         last_login_at=created_user.last_login_at,
@@ -171,6 +192,19 @@ async def list_users(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(require_role(["ADMIN", "MANAGER"]))
 ):
+    
+    if limit <0: 
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail = "Make sure your numbers are not a negative integer."
+        )
+    
+    elif limit == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail = 'Add in a valid number.'
+        )
+    
     total_users = await UserService.count(db)
     users = await UserService.list_users(db, skip, limit)
 
